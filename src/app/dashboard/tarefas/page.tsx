@@ -33,19 +33,84 @@ const supabase = createClient()
 
 const [tarefas,setTarefas] = useState<any[]>([])
 const [open,setOpen] = useState(false)
-
+const [editando,setEditando] = useState<any>(null)
+const [filtro,setFiltro] = useState("todos")
 const [form,setForm] = useState({
 
 titulo:"",
 descricao:"",
 status:"pendente",
 prioridade:"media",
-
+data_vencimento:"",
 })
+<div>
+
+<Label>
+Prazo
+</Label>
+
+
+<Input
+type="date"
+value={form.data_vencimento}
+onChange={(e)=>
+setForm({
+...form,
+data_vencimento:e.target.value
+})
+}
+/>
+
+</div>
 
 useEffect(()=>{
 
 buscarTarefas()
+async function concluirTarefa(id:string){
+
+const {error}=await supabase
+.from("tarefas")
+.insert({
+  titulo: form.titulo,
+  descricao: form.descricao,
+  status: form.status.toLowerCase(),
+  prioridade: form.prioridade.toLowerCase(),
+data_vencimento: form.data_vencimento || null
+})
+.eq("id",id)
+
+
+if(error){
+toast.error(error.message)
+return
+}
+
+toast.success("Tarefa concluída")
+
+buscarTarefas()
+
+}
+
+
+
+async function excluirTarefa(id:string){
+
+const {error}=await supabase
+.from("tarefas")
+.delete()
+.eq("id",id)
+
+
+if(error){
+toast.error(error.message)
+return
+}
+
+toast.success("Tarefa excluída")
+
+buscarTarefas()
+
+}
 
 },[])
 
@@ -241,10 +306,37 @@ tarefas.filter(t=>t.prioridade==="alta").length
 
 
 <div className="grid gap-4">
+<div className="flex gap-3">
 
+<Button
+variant={filtro==="todos" ? "default":"outline"}
+onClick={()=>setFiltro("todos")}
+>
+Todas
+</Button>
+
+
+<Button
+variant={filtro==="pendente" ? "default":"outline"}
+onClick={()=>setFiltro("pendente")}
+>
+Pendentes
+</Button>
+
+
+<Button
+variant={filtro==="concluida" ? "default":"outline"}
+onClick={()=>setFiltro("concluida")}
+>
+Concluídas
+</Button>
+
+</div>
 
 {
-tarefas.map((tarefa)=>(
+tarefas
+.filter(t => filtro==="todos" ? true : t.status===filtro)
+.map((tarefa)=>(
 
 
 <Card key={tarefa.id}>
@@ -268,7 +360,37 @@ tarefas.map((tarefa)=>(
 </CardHeader>
 
 
-<CardContent>
+<CardContent><div className="flex gap-2 mt-4">
+
+
+{
+tarefa.status !== "concluida" && (
+
+<Button
+size="sm"
+onClick={()=>concluirTarefa(tarefa.id)}
+>
+<CheckCircle className="mr-2 h-4 w-4"/>
+Concluir
+</Button>
+
+)
+}
+
+
+
+<Button
+size="sm"
+variant="destructive"
+onClick={()=>excluirTarefa(tarefa.id)}
+>
+
+Excluir
+
+</Button>
+
+
+</div>
 
 <p>
 {tarefa.descricao}
