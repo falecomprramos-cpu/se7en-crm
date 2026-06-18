@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
+
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+
 import {
   Dialog,
   DialogContent,
@@ -23,105 +25,64 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
-import { Plus, CheckCircle, Clock, AlertTriangle } from "lucide-react"
+
+import {
+  Plus,
+  CheckCircle,
+  Clock,
+  AlertTriangle
+} from "lucide-react"
+
 import { toast } from "sonner"
+
 
 
 export default function TarefasPage(){
 
+
 const supabase = createClient()
 
+
 const [tarefas,setTarefas] = useState<any[]>([])
+
 const [open,setOpen] = useState(false)
-const [editando,setEditando] = useState<any>(null)
+
 const [filtro,setFiltro] = useState("todos")
+
+
+
 const [form,setForm] = useState({
 
 titulo:"",
 descricao:"",
 status:"pendente",
 prioridade:"media",
-data_vencimento:"",
+data_vencimento:""
+
 })
-<div>
-
-<Label>
-Prazo
-</Label>
 
 
-<Input
-type="date"
-value={form.data_vencimento}
-onChange={(e)=>
-setForm({
-...form,
-data_vencimento:e.target.value
-})
-}
-/>
 
-</div>
+
 
 useEffect(()=>{
 
 buscarTarefas()
-async function concluirTarefa(id:string){
-
-const {error}=await supabase
-.from("tarefas")
-.insert({
-  titulo: form.titulo,
-  descricao: form.descricao,
-  status: form.status.toLowerCase(),
-  prioridade: form.prioridade.toLowerCase(),
-data_vencimento: form.data_vencimento || null
-})
-.eq("id",id)
-
-
-if(error){
-toast.error(error.message)
-return
-}
-
-toast.success("Tarefa concluída")
-
-buscarTarefas()
-
-}
-
-
-
-async function excluirTarefa(id:string){
-
-const {error}=await supabase
-.from("tarefas")
-.delete()
-.eq("id",id)
-
-
-if(error){
-toast.error(error.message)
-return
-}
-
-toast.success("Tarefa excluída")
-
-buscarTarefas()
-
-}
 
 },[])
 
 
 
+
+
 async function buscarTarefas(){
 
-const {data,error}= await supabase
+
+const {data,error}=await supabase
 .from("tarefas")
 .select("*")
 .order("criado_em",{ascending:false})
+
 
 
 if(!error){
@@ -130,42 +91,51 @@ setTarefas(data || [])
 
 }
 
+
 }
+
+
+
+
 
 
 
 async function salvarTarefa(){
 
-console.log("FORM:", form)
+
 
 if(!form.titulo){
 
 toast.error("Digite o título da tarefa")
+
 return
 
 }
 
-const { data: { user } } = await supabase.auth.getUser()
 
-if (!user) {
-  toast.error("Usuário não autenticado")
-  return
-}
 
 
 const {error}=await supabase
 .from("tarefas")
 .insert({
-  titulo: form.titulo,
-  descricao: form.descricao,
-  status: form.status.toLowerCase(),
-  prioridade: form.prioridade.toLowerCase()
+
+titulo:form.titulo,
+
+descricao:form.descricao,
+
+status:form.status,
+
+prioridade:form.prioridade,
+
+data_vencimento:form.data_vencimento || null
+
 })
 
 
-if(error){
 
-console.log("ERRO SUPABASE:", error)
+
+
+if(error){
 
 toast.error(error.message)
 
@@ -173,9 +143,15 @@ return
 
 }
 
+
+
 toast.success("Tarefa criada")
 
+
+
 setOpen(false)
+
+
 
 setForm({
 
@@ -183,41 +159,139 @@ titulo:"",
 descricao:"",
 status:"pendente",
 prioridade:"media",
-
+data_vencimento:""
 
 })
+
 
 
 buscarTarefas()
 
 
+
 }
+
+
+
+
+
+
+
+async function concluirTarefa(id:string){
+
+
+
+const {error}=await supabase
+.from("tarefas")
+.update({
+
+status:"concluida"
+
+})
+.eq("id",id)
+
+
+
+
+if(error){
+
+toast.error(error.message)
+
+return
+
+}
+
+
+
+toast.success("Tarefa concluída")
+
+buscarTarefas()
+
+
+
+}
+
+
+
+
+
+
+
+async function excluirTarefa(id:string){
+
+
+
+const {error}=await supabase
+.from("tarefas")
+.delete()
+.eq("id",id)
+
+
+
+
+if(error){
+
+toast.error(error.message)
+
+return
+
+}
+
+
+
+toast.success("Tarefa excluída")
+
+buscarTarefas()
+
+
+
+}
+
+
+
+
+
 
 
 
 return(
 
+
 <div className="space-y-6 p-6">
+
+
+
 
 
 <div className="flex justify-between items-center">
 
+
 <div>
 
 <h1 className="text-3xl font-bold">
+
 Tarefas
+
 </h1>
 
+
 <p className="text-muted-foreground">
+
 Gerencie suas atividades
+
 </p>
+
 
 </div>
 
 
+
 <Button onClick={()=>setOpen(true)}>
+
 <Plus className="mr-2 h-4 w-4"/>
+
 Nova tarefa
+
 </Button>
 
 
@@ -226,7 +300,11 @@ Nova tarefa
 
 
 
-<div className="grid gap-4 md:grid-cols-3">
+
+
+
+<div className="grid md:grid-cols-3 gap-4">
+
 
 
 <Card>
@@ -234,109 +312,173 @@ Nova tarefa
 <CardHeader>
 
 <CardTitle>
+
 Pendentes
+
 </CardTitle>
 
 </CardHeader>
 
+
 <CardContent>
 
+
 <Clock/>
+
+
+<p className="text-2xl font-bold">
 
 {
 tarefas.filter(t=>t.status==="pendente").length
 }
 
+</p>
+
+
 </CardContent>
+
 
 </Card>
 
 
 
+
+
+
+
 <Card>
+
 
 <CardHeader>
 
 <CardTitle>
+
 Concluídas
+
 </CardTitle>
 
 </CardHeader>
 
+
+
 <CardContent>
 
+
 <CheckCircle/>
+
+
+<p className="text-2xl font-bold">
 
 {
 tarefas.filter(t=>t.status==="concluida").length
 }
 
+</p>
+
+
 </CardContent>
 
+
 </Card>
+
+
+
+
 
 
 
 <Card>
 
+
 <CardHeader>
 
 <CardTitle>
+
 Prioridade Alta
+
 </CardTitle>
 
 </CardHeader>
 
+
+
 <CardContent>
 
+
 <AlertTriangle/>
+
+
+<p className="text-2xl font-bold">
 
 {
 tarefas.filter(t=>t.prioridade==="alta").length
 }
 
+</p>
+
+
 </CardContent>
+
 
 </Card>
 
 
+
+
 </div>
 
 
 
 
-<div className="grid gap-4">
+
+
+
 <div className="flex gap-3">
 
-<Button
-variant={filtro==="todos" ? "default":"outline"}
-onClick={()=>setFiltro("todos")}
->
+
+<Button onClick={()=>setFiltro("todos")}>
+
 Todas
+
 </Button>
 
 
-<Button
-variant={filtro==="pendente" ? "default":"outline"}
-onClick={()=>setFiltro("pendente")}
->
+<Button onClick={()=>setFiltro("pendente")}>
+
 Pendentes
+
 </Button>
 
 
-<Button
-variant={filtro==="concluida" ? "default":"outline"}
-onClick={()=>setFiltro("concluida")}
->
+<Button onClick={()=>setFiltro("concluida")}>
+
 Concluídas
+
 </Button>
+
 
 </div>
 
+
+
+
+
+
+
+
+
+<div className="space-y-4">
+
+
+
 {
+
 tarefas
-.filter(t => filtro==="todos" ? true : t.status===filtro)
-.map((tarefa)=>(
+
+.filter(t=> filtro==="todos" ? true : t.status===filtro)
+
+.map(tarefa=>(
+
 
 
 <Card key={tarefa.id}>
@@ -344,45 +486,92 @@ tarefas
 
 <CardHeader>
 
+
 <CardTitle className="flex justify-between">
+
 
 {tarefa.titulo}
 
-<span className="text-sm">
+
+
+<span className="text-sm text-muted-foreground">
 
 {tarefa.status}
 
 </span>
 
+
+
 </CardTitle>
+
 
 
 </CardHeader>
 
 
-<CardContent><div className="flex gap-2 mt-4">
+
+
+<CardContent>
+
+
+<p>
+
+{tarefa.descricao}
+
+</p>
+
+
+
+
+<p className="text-sm mt-3 text-muted-foreground">
+
+Prioridade: {tarefa.prioridade}
+
+<br/>
+
+Prazo: {tarefa.data_vencimento || "Sem prazo"}
+
+</p>
+
+
+
+
+
+<div className="flex gap-2 mt-4">
+
+
+
 
 
 {
-tarefa.status !== "concluida" && (
+
+tarefa.status !== "concluida" &&
 
 <Button
-size="sm"
+
 onClick={()=>concluirTarefa(tarefa.id)}
+
 >
+
 <CheckCircle className="mr-2 h-4 w-4"/>
+
 Concluir
+
 </Button>
 
-)
+
 }
 
 
 
+
+
 <Button
-size="sm"
+
 variant="destructive"
+
 onClick={()=>excluirTarefa(tarefa.id)}
+
 >
 
 Excluir
@@ -390,37 +579,33 @@ Excluir
 </Button>
 
 
-</div>
-
-<p>
-{tarefa.descricao}
-</p>
 
 
-<div className="mt-3 text-sm text-muted-foreground">
-
-Prioridade: {tarefa.prioridade}
-
-<br/>
-
-Prazo: {tarefa.data_limite || "Sem prazo"}
 
 </div>
+
 
 
 </CardContent>
 
 
+
 </Card>
 
 
+
 ))
+
 
 }
 
 
 
 </div>
+
+
+
+
 
 
 
@@ -434,111 +619,160 @@ Prazo: {tarefa.data_limite || "Sem prazo"}
 
 <DialogHeader>
 
+
 <DialogTitle>
+
 Nova tarefa
+
 </DialogTitle>
+
 
 </DialogHeader>
 
 
 
-<div className="space-y-4">
-<div>
+
+
 
 <Label>
+
 Título
+
 </Label>
+
 
 <Input
 
 value={form.titulo}
 
 onChange={(e)=>
+
 setForm({
+
 ...form,
+
 titulo:e.target.value
+
 })
+
 }
 
 />
 
-</div>
 
 
 
 
-<div>
 
 <Label>
+
 Descrição
+
 </Label>
+
 
 <Textarea
 
 value={form.descricao}
 
 onChange={(e)=>
-setForm({...form,descricao:e.target.value})
+
+setForm({
+
+...form,
+
+descricao:e.target.value
+
+})
+
 }
 
 />
 
-</div>
 
 
 
-<div>
 
-<Label>Status</Label>
+
+
+<Label>
+
+Status
+
+</Label>
+
+
 
 <Select
+
 value={form.status}
+
 onValueChange={(v)=>
-setForm({...form,status:v})
+
+setForm({
+
+...form,
+
+status:v
+
+})
+
 }
+
 >
+
 
 <SelectTrigger>
 
-<SelectValue />
+<SelectValue/>
 
 </SelectTrigger>
 
 
+
 <SelectContent>
 
+
 <SelectItem value="pendente">
+
 Pendente
+
 </SelectItem>
 
 
 <SelectItem value="em_andamento">
+
 Em andamento
+
 </SelectItem>
+
 
 
 <SelectItem value="concluida">
+
 Concluída
+
 </SelectItem>
 
-
-<SelectItem value="cancelada">
-Cancelada
-</SelectItem>
 
 
 </SelectContent>
 
+
 </Select>
 
-</div>
 
 
-<div>
+
+
+
 
 <Label>
+
 Prioridade
+
 </Label>
+
 
 
 <Select
@@ -546,63 +780,126 @@ Prioridade
 value={form.prioridade}
 
 onValueChange={(v)=>
-setForm({...form,prioridade:v})
+
+setForm({
+
+...form,
+
+prioridade:v
+
+})
+
 }
 
 >
 
 
+
 <SelectTrigger>
 
-<SelectValue />
+<SelectValue/>
 
 </SelectTrigger>
+
 
 
 <SelectContent>
 
 
+
 <SelectItem value="baixa">
+
 Baixa
+
 </SelectItem>
+
 
 
 <SelectItem value="media">
+
 Média
+
 </SelectItem>
+
 
 
 <SelectItem value="alta">
+
 Alta
+
 </SelectItem>
+
 
 
 <SelectItem value="urgente">
+
 Urgente
+
 </SelectItem>
+
 
 
 </SelectContent>
 
 
+
 </Select>
 
-</div>
 
 
 
 
-</div>
+
+
+<Label>
+
+Prazo
+
+</Label>
+
+
+
+<Input
+
+type="date"
+
+value={form.data_vencimento}
+
+onChange={(e)=>
+
+setForm({
+
+...form,
+
+data_vencimento:e.target.value
+
+})
+
+}
+
+/>
+
+
+
+
 
 
 
 <DialogFooter>
 
+
 <Button onClick={salvarTarefa}>
+
 Criar tarefa
+
 </Button>
 
+
+
 </DialogFooter>
+
+
+
 
 
 
@@ -614,9 +911,13 @@ Criar tarefa
 
 
 
+
+
+
 </div>
 
 
 )
+
 
 }
