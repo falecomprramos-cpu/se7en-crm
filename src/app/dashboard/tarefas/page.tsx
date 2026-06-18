@@ -38,12 +38,10 @@ const [form,setForm] = useState({
 
 titulo:"",
 descricao:"",
-status:"Pendente",
-prioridade:"Normal",
-
+status:"pendente",
+prioridade:"media",
 
 })
-
 
 useEffect(()=>{
 
@@ -58,7 +56,7 @@ async function buscarTarefas(){
 const {data,error}= await supabase
 .from("tarefas")
 .select("*")
-.order("created_at",{ascending:false})
+.order("criado_em",{ascending:false})
 
 
 if(!error){
@@ -205,7 +203,7 @@ Concluídas
 <CheckCircle/>
 
 {
-tarefas.filter(t=>t.status==="concluída").length
+tarefas.filter(t=>t.status==="concluida").length
 }
 
 </CardContent>
