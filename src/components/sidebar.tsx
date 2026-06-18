@@ -26,7 +26,7 @@ const menuItems = [
   { href: "/dashboard/propostas", label: "Propostas", icon: FileText },
   { href: "/dashboard/vendas", label: "Vendas", icon: DollarSign },
   { href: "/dashboard/emails", label: "Emails", icon: Mail },
-  { href: "/configuracoes", label: "Configurações", icon: Settings },
+  { href: "/dashboard/configuracoes", label: "Configurações", icon: Settings },
 ]
 
 export function Sidebar() {
