@@ -584,8 +584,10 @@ Baixa
 
 </Select>
 
-<div className="flex gap-3">
+</div>
 
+
+<div className="flex gap-3">
 
 <Button onClick={()=>setFiltro("todos")}>
 
