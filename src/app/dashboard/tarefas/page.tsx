@@ -25,12 +25,12 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
-
 import {
   Plus,
   CheckCircle,
   Clock,
-  AlertTriangle
+  AlertTriangle,
+  Pencil
 } from "lucide-react"
 
 import { toast } from "sonner"
@@ -47,7 +47,12 @@ const [tarefas,setTarefas] = useState<any[]>([])
 
 const [open,setOpen] = useState(false)
 
+const [editando,setEditando] = useState<any>(null)
+
 const [filtro,setFiltro] = useState("todos")
+
+const [busca,setBusca] = useState("")
+const [prioridadeFiltro,setPrioridadeFiltro] = useState("todas")
 
 
 
@@ -115,6 +120,63 @@ return
 
 
 
+// EDITAR
+
+if(editando){
+
+
+const {error}=await supabase
+.from("tarefas")
+.update({
+
+titulo:form.titulo,
+
+descricao:form.descricao,
+
+status:form.status,
+
+prioridade:form.prioridade,
+
+data_vencimento:form.data_vencimento || null
+
+
+})
+.eq("id",editando.id)
+
+
+
+
+if(error){
+
+toast.error(error.message)
+
+return
+
+}
+
+
+
+toast.success("Tarefa atualizada")
+
+
+setEditando(null)
+
+setOpen(false)
+
+buscarTarefas()
+
+
+return
+
+
+}
+
+
+
+
+// CRIAR
+
+
 const {error}=await supabase
 .from("tarefas")
 .insert({
@@ -129,9 +191,8 @@ prioridade:form.prioridade,
 
 data_vencimento:form.data_vencimento || null
 
+
 })
-
-
 
 
 
@@ -148,9 +209,7 @@ return
 toast.success("Tarefa criada")
 
 
-
 setOpen(false)
-
 
 
 setForm({
@@ -164,21 +223,12 @@ data_vencimento:""
 })
 
 
-
 buscarTarefas()
-
 
 
 }
 
-
-
-
-
-
-
 async function concluirTarefa(id:string){
-
 
 
 const {error}=await supabase
@@ -189,7 +239,6 @@ status:"concluida"
 
 })
 .eq("id",id)
-
 
 
 
@@ -208,7 +257,6 @@ toast.success("Tarefa concluída")
 buscarTarefas()
 
 
-
 }
 
 
@@ -220,12 +268,10 @@ buscarTarefas()
 async function excluirTarefa(id:string){
 
 
-
 const {error}=await supabase
 .from("tarefas")
 .delete()
 .eq("id",id)
-
 
 
 
@@ -244,9 +290,38 @@ toast.success("Tarefa excluída")
 buscarTarefas()
 
 
-
 }
 
+
+
+
+
+
+function abrirEditar(tarefa:any){
+
+
+setEditando(tarefa)
+
+
+setForm({
+
+titulo:tarefa.titulo,
+
+descricao:tarefa.descricao || "",
+
+status:tarefa.status,
+
+prioridade:tarefa.prioridade,
+
+data_vencimento:tarefa.data_vencimento || ""
+
+})
+
+
+setOpen(true)
+
+
+}
 
 
 
@@ -261,12 +336,11 @@ return(
 
 
 
-
-
 <div className="flex justify-between items-center">
 
 
 <div>
+
 
 <h1 className="text-3xl font-bold">
 
@@ -286,11 +360,29 @@ Gerencie suas atividades
 
 
 
-<Button onClick={()=>setOpen(true)}>
+<Button onClick={()=>{
+
+setEditando(null)
+
+setForm({
+
+titulo:"",
+descricao:"",
+status:"pendente",
+prioridade:"media",
+data_vencimento:""
+
+})
+
+setOpen(true)
+
+}}>
+
 
 <Plus className="mr-2 h-4 w-4"/>
 
 Nova tarefa
+
 
 </Button>
 
@@ -322,7 +414,6 @@ Pendentes
 
 <CardContent>
 
-
 <Clock/>
 
 
@@ -345,9 +436,7 @@ tarefas.filter(t=>t.status==="pendente").length
 
 
 
-
 <Card>
-
 
 <CardHeader>
 
@@ -360,9 +449,7 @@ Concluídas
 </CardHeader>
 
 
-
 <CardContent>
-
 
 <CheckCircle/>
 
@@ -386,9 +473,7 @@ tarefas.filter(t=>t.status==="concluida").length
 
 
 
-
 <Card>
-
 
 <CardHeader>
 
@@ -401,9 +486,7 @@ Prioridade Alta
 </CardHeader>
 
 
-
 <CardContent>
-
 
 <AlertTriangle/>
 
@@ -424,7 +507,6 @@ tarefas.filter(t=>t.prioridade==="alta").length
 
 
 
-
 </div>
 
 
@@ -432,6 +514,75 @@ tarefas.filter(t=>t.prioridade==="alta").length
 
 
 
+<div className="flex gap-3 flex-wrap">
+
+
+<Input
+
+placeholder="Buscar tarefa..."
+
+value={busca}
+
+onChange={(e)=>
+setBusca(e.target.value)
+}
+
+/>
+
+
+
+<Select
+
+value={prioridadeFiltro}
+
+onValueChange={setPrioridadeFiltro}
+
+>
+
+
+<SelectTrigger className="w-[180px]">
+
+<SelectValue placeholder="Prioridade"/>
+
+</SelectTrigger>
+
+
+
+<SelectContent>
+
+
+<SelectItem value="todas">
+
+Todas prioridades
+
+</SelectItem>
+
+
+<SelectItem value="alta">
+
+Alta
+
+</SelectItem>
+
+
+<SelectItem value="media">
+
+Média
+
+</SelectItem>
+
+
+<SelectItem value="baixa">
+
+Baixa
+
+</SelectItem>
+
+
+</SelectContent>
+
+
+</Select>
 
 <div className="flex gap-3">
 
@@ -459,23 +610,32 @@ Concluídas
 
 </div>
 
-
-
-
-
-
-
-
-
 <div className="space-y-4">
-
 
 
 {
 
 tarefas
 
-.filter(t=> filtro==="todos" ? true : t.status===filtro)
+.filter(t=> 
+filtro==="todos" 
+? true 
+: t.status===filtro
+)
+
+.filter(t=>
+prioridadeFiltro==="todas"
+?
+true
+:
+t.prioridade===prioridadeFiltro
+)
+
+.filter(t=>
+t.titulo
+.toLowerCase()
+.includes(busca.toLowerCase())
+)
 
 .map(tarefa=>(
 
@@ -494,16 +654,50 @@ tarefas
 
 
 
-<span className="text-sm text-muted-foreground">
+<span
+className={`
+px-3 py-1 rounded-full text-xs font-medium
 
-{tarefa.status}
+${
+tarefa.status === "concluida"
+
+? "bg-green-500/20 text-green-400"
+
+:
+
+tarefa.status === "em_andamento"
+
+? "bg-blue-500/20 text-blue-400"
+
+:
+
+"bg-yellow-500/20 text-yellow-400"
+
+}
+
+`}
+>
+
+{tarefa.status === "concluida"
+
+? "Concluída"
+
+:
+
+tarefa.status === "em_andamento"
+
+? "Em andamento"
+
+:
+
+"Pendente"
+
+}
 
 </span>
 
 
-
 </CardTitle>
-
 
 
 </CardHeader>
@@ -511,7 +705,9 @@ tarefas
 
 
 
+
 <CardContent>
+
 
 
 <p>
@@ -525,11 +721,16 @@ tarefas
 
 <p className="text-sm mt-3 text-muted-foreground">
 
+
 Prioridade: {tarefa.prioridade}
+
 
 <br/>
 
+
 Prazo: {tarefa.data_vencimento || "Sem prazo"}
+
+
 
 </p>
 
@@ -547,20 +748,44 @@ Prazo: {tarefa.data_vencimento || "Sem prazo"}
 
 tarefa.status !== "concluida" &&
 
+
 <Button
 
 onClick={()=>concluirTarefa(tarefa.id)}
 
 >
 
+
 <CheckCircle className="mr-2 h-4 w-4"/>
 
+
 Concluir
+
 
 </Button>
 
 
 }
+
+
+
+
+<Button
+
+variant="outline"
+
+onClick={()=>abrirEditar(tarefa)}
+
+>
+
+
+<Pencil className="mr-2 h-4 w-4"/>
+
+
+Editar
+
+
+</Button>
 
 
 
@@ -574,15 +799,16 @@ onClick={()=>excluirTarefa(tarefa.id)}
 
 >
 
+
 Excluir
+
 
 </Button>
 
 
 
-
-
 </div>
+
 
 
 
@@ -591,7 +817,6 @@ Excluir
 
 
 </Card>
-
 
 
 ))
@@ -610,11 +835,32 @@ Excluir
 
 
 
+<Dialog 
+open={open} 
+onOpenChange={(valor)=>{
 
-<Dialog open={open} onOpenChange={setOpen}>
+setOpen(valor)
+
+if(!valor){
+
+setEditando(null)
+
+setForm({
+titulo:"",
+descricao:"",
+status:"pendente",
+prioridade:"media",
+data_vencimento:""
+})
+
+}
+
+}}
+>
 
 
 <DialogContent>
+
 
 
 <DialogHeader>
@@ -622,13 +868,12 @@ Excluir
 
 <DialogTitle>
 
-Nova tarefa
+{editando ? "Editar tarefa" : "Nova tarefa"}
 
 </DialogTitle>
 
 
 </DialogHeader>
-
 
 
 
@@ -643,7 +888,9 @@ Título
 
 <Input
 
+
 value={form.titulo}
+
 
 onChange={(e)=>
 
@@ -655,7 +902,9 @@ titulo:e.target.value
 
 })
 
+
 }
+
 
 />
 
@@ -671,9 +920,12 @@ Descrição
 </Label>
 
 
+
 <Textarea
 
+
 value={form.descricao}
+
 
 onChange={(e)=>
 
@@ -685,7 +937,9 @@ descricao:e.target.value
 
 })
 
+
 }
+
 
 />
 
@@ -702,10 +956,11 @@ Status
 </Label>
 
 
-
 <Select
 
+
 value={form.status}
+
 
 onValueChange={(v)=>
 
@@ -717,7 +972,9 @@ status:v
 
 })
 
+
 }
+
 
 >
 
@@ -740,6 +997,7 @@ Pendente
 </SelectItem>
 
 
+
 <SelectItem value="em_andamento">
 
 Em andamento
@@ -759,8 +1017,8 @@ Concluída
 </SelectContent>
 
 
-</Select>
 
+</Select>
 
 
 
@@ -777,7 +1035,9 @@ Prioridade
 
 <Select
 
+
 value={form.prioridade}
+
 
 onValueChange={(v)=>
 
@@ -789,10 +1049,11 @@ prioridade:v
 
 })
 
+
 }
 
->
 
+>
 
 
 <SelectTrigger>
@@ -838,7 +1099,6 @@ Urgente
 </SelectItem>
 
 
-
 </SelectContent>
 
 
@@ -861,9 +1121,13 @@ Prazo
 
 <Input
 
+
 type="date"
 
+
 value={form.data_vencimento}
+
+
 
 onChange={(e)=>
 
@@ -875,10 +1139,11 @@ data_vencimento:e.target.value
 
 })
 
+
 }
 
-/>
 
+/>
 
 
 
@@ -890,24 +1155,23 @@ data_vencimento:e.target.value
 
 <Button onClick={salvarTarefa}>
 
-Criar tarefa
+
+{editando ? "Salvar alteração" : "Criar tarefa"}
+
+
 
 </Button>
-
 
 
 </DialogFooter>
 
 
 
-
-
-
 </DialogContent>
 
 
-</Dialog>
 
+</Dialog>
 
 
 
