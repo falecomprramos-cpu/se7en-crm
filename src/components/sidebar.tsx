@@ -14,21 +14,33 @@ import {
   Mail,
   Settings,
   LogOut,
+  Target,
+  Calendar,
 } from "lucide-react"
+
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
-
 const menuItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+
+  { href: "/dashboard/leads", label: "Leads", icon: Target },
+
   { href: "/dashboard/clientes", label: "Clientes", icon: Users },
+
+  { href: "/dashboard/agenda", label: "Agenda", icon: Calendar },
+
   { href: "/dashboard/tarefas", label: "Tarefas", icon: CheckSquare },
+
   { href: "/dashboard/projetos", label: "Projetos", icon: Briefcase },
+
   { href: "/dashboard/propostas", label: "Propostas", icon: FileText },
+
   { href: "/dashboard/vendas", label: "Vendas", icon: DollarSign },
+
   { href: "/dashboard/emails", label: "Emails", icon: Mail },
+
   { href: "/dashboard/configuracoes", label: "Configurações", icon: Settings },
 ]
-
 export function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()

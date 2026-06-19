@@ -1,0 +1,106 @@
+"use client"
+
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis
+} from "recharts"
+
+export default function LeadsDashboard({ leads }: any) {
+
+  const count = (status: string) =>
+    leads.filter((l: any) => l.status === status).length
+
+  const data = [
+    { name: "Novo", value: count("novo") },
+    { name: "Contato", value: count("contato") },
+    { name: "Proposta", value: count("proposta") },
+    { name: "Fechado", value: count("fechado") },
+    { name: "Perdido", value: count("perdido") },
+  ]
+
+  const funil = [
+    { etapa: "Novo", total: count("novo") },
+    { etapa: "Contato", total: count("contato") },
+    { etapa: "Proposta", total: count("proposta") },
+    { etapa: "Fechado", total: count("fechado") },
+    { etapa: "Perdido", total: count("perdido") },
+  ]
+
+  const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#00C49F", "#FF8042"]
+
+  const total = leads.length
+
+  const conversao = total
+    ? ((count("fechado") / total) * 100).toFixed(1)
+    : 0
+
+  return (
+    <div className="space-y-6">
+
+      {/* GRID PRINCIPAL */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        {/* GRÁFICO PIZZA */}
+        <div className="bg-white p-4 rounded shadow">
+          <h2 className="font-bold mb-4">Leads por Status</h2>
+
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={data}
+                dataKey="value"
+                nameKey="name"
+                outerRadius={120}
+                label
+              >
+                {data.map((_, index) => (
+                  <Cell key={index} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* RESUMO */}
+        <div className="bg-white p-4 rounded shadow">
+          <h2 className="font-bold mb-4">Resumo do Funil</h2>
+
+          <p>Total de leads: {total}</p>
+          <p>Novos: {count("novo")}</p>
+          <p>Em contato: {count("contato")}</p>
+          <p>Proposta: {count("proposta")}</p>
+          <p>Fechados: {count("fechado")}</p>
+          <p>Perdidos: {count("perdido")}</p>
+
+          <div className="mt-4 p-3 bg-green-100 rounded font-semibold">
+            Conversão: {conversao}%
+          </div>
+        </div>
+
+      </div>
+
+      {/* FUNIL DE VENDAS */}
+      <div className="bg-white p-4 rounded shadow">
+        <h2 className="font-bold mb-4">Funil de Vendas</h2>
+
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={funil}>
+            <XAxis dataKey="etapa" />
+            <YAxis />
+            <Tooltip />
+            <Bar dataKey="total" fill="#4f46e5" />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+    </div>
+  )
+}
