@@ -67,21 +67,33 @@ className="cursor-grab"
 
 <CardContent>
 
-
 <p>
-📞 {lead.telefone || "Sem telefone"}
+👤 <b>Nome:</b> {lead.nome}
 </p>
 
-
 <p>
-✉ {lead.email || "Sem email"}
+🏢 <b>Empresa:</b> {lead.empresa || "Não informado"}
 </p>
 
+<p>
+📱 <b>WhatsApp:</b> {lead.whatsapp || "Não informado"}
+</p>
+
+<p>
+📸 <b>Instagram:</b> {lead.instagram || "Não informado"}
+</p>
+
+<p>
+🎯 <b>Segmento:</b> {lead.segmento || "Não informado"}
+</p>
+
+<p>
+🌎 <b>Origem:</b> {lead.origem || "Não informado"}
+</p>
 
 <p>
 Status: {lead.status}
 </p>
-
 
 
 <button

@@ -1,17 +1,14 @@
-create table if not exists leads (
+alter table leads
+add column if not exists empresa text;
 
-id uuid default gen_random_uuid() primary key,
+alter table leads
+add column if not exists whatsapp text;
 
-nome text not null,
+alter table leads
+add column if not exists instagram text;
 
-telefone text,
+alter table leads
+add column if not exists segmento text;
 
-email text,
-
-origem text,
-
-status text default 'novo',
-
-created_at timestamp with time zone default now()
-
-);
+alter table leads
+add column if not exists origem text;

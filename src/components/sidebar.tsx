@@ -27,7 +27,7 @@ const menuItems = [
 
   { href: "/dashboard/clientes", label: "Clientes", icon: Users },
 
-  { href: "/dashboard/agenda", label: "Agenda", icon: Calendar },
+{ href: "/dashboard/agenda", label: "Calendário", icon: Calendar },
 
   { href: "/dashboard/tarefas", label: "Tarefas", icon: CheckSquare },
 

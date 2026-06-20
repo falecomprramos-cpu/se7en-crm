@@ -27,8 +27,11 @@ export default function LeadsPage() {
 
   const [leads, setLeads] = useState<any[]>([])
   const [nome, setNome] = useState("")
-  const [telefone, setTelefone] = useState("")
-  const [email, setEmail] = useState("")
+const [empresa, setEmpresa] = useState("")
+const [whatsapp, setWhatsapp] = useState("")
+const [instagram, setInstagram] = useState("")
+const [segmento, setSegmento] = useState("")
+const [origem, setOrigem] = useState("")
   const [filtro, setFiltro] = useState("todos")
 
   useEffect(() => {
@@ -57,12 +60,15 @@ export default function LeadsPage() {
     const { error } = await supabase
       .from("leads")
       .insert({
-        nome,
-        telefone,
-        email,
-        status: "novo",
-        etapa: "novo"
-      })
+  nome,
+  empresa,
+  whatsapp,
+  instagram,
+  segmento,
+  origem,
+  status: "novo",
+  etapa: "novo"
+})
 
     if (error) {
       toast.error(error.message)
@@ -72,8 +78,11 @@ export default function LeadsPage() {
     toast.success("Lead criado")
 
     setNome("")
-    setTelefone("")
-    setEmail("")
+setEmpresa("")
+setWhatsapp("")
+setInstagram("")
+setSegmento("")
+setOrigem("")
 
     buscarLeads()
   }
@@ -204,8 +213,29 @@ buscarLeads()
         <CardContent className="space-y-4">
 
           <Input placeholder="Nome" value={nome} onChange={(e) => setNome(e.target.value)} />
-          <Input placeholder="Telefone" value={telefone} onChange={(e) => setTelefone(e.target.value)} />
-          <Input placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+<Input placeholder="Empresa" value={empresa} onChange={(e) => setEmpresa(e.target.value)} />
+<Input placeholder="WhatsApp" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} />
+<Input placeholder="Instagram" value={instagram} onChange={(e) => setInstagram(e.target.value)} />
+<Input 
+placeholder="Segmento" 
+value={segmento} 
+onChange={(e) => setSegmento(e.target.value)} 
+/>
+
+
+<select
+  className="w-full p-2 border rounded"
+  value={origem}
+  onChange={(e) => setOrigem(e.target.value)}
+>
+  <option value="">Origem do lead</option>
+  <option value="Instagram">Instagram</option>
+  <option value="Indicação">Indicação</option>
+  <option value="Anúncio">Anúncio</option>
+  <option value="Site">Site</option>
+</select>
+
+
 
           <Button onClick={salvarLead}>
             <Plus className="mr-2 h-4 w-4" />
