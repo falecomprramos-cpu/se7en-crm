@@ -16,6 +16,7 @@ import {
   LogOut,
   Target,
   Calendar,
+  UserPlus,
 } from "lucide-react"
 
 import { createClient } from "@/lib/supabase/client"
@@ -25,9 +26,11 @@ const menuItems = [
 
   { href: "/dashboard/leads", label: "Leads", icon: Target },
 
-  { href: "/dashboard/clientes", label: "Clientes", icon: Users },
+{ href: "/dashboard/clientes", label: "Clientes", icon: Users },
 
-{ href: "/dashboard/agenda", label: "Calendário", icon: Calendar },
+{ href: "/dashboard/calendario", label: "Calendário", icon: Calendar },
+
+{ href: "/dashboard/posts", label: "Posts", icon: FileText },
 
   { href: "/dashboard/tarefas", label: "Tarefas", icon: CheckSquare },
 
@@ -38,6 +41,8 @@ const menuItems = [
   { href: "/dashboard/vendas", label: "Vendas", icon: DollarSign },
 
   { href: "/dashboard/emails", label: "Emails", icon: Mail },
+
+{ href: "/dashboard/cadastrar-cliente", label: "Cadastrar Cliente", icon: UserPlus },
 
   { href: "/dashboard/configuracoes", label: "Configurações", icon: Settings },
 ]

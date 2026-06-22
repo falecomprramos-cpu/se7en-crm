@@ -1,7 +1,7 @@
 "use client"
 
-import {useEffect,useState} from "react"
-import {createClient} from "@/lib/supabase/client"
+import { useEffect, useState } from "react"
+import { createClient } from "@/lib/supabase/client"
 
 import {
 Card,
@@ -10,85 +10,40 @@ CardHeader,
 CardTitle
 } from "@/components/ui/card"
 
-import {Input} from "@/components/ui/input"
-import {Textarea} from "@/components/ui/textarea"
-import {Button} from "@/components/ui/button"
-import {Label} from "@/components/ui/label"
-
-import {
-Plus,
-Trash2,
-Calendar
-} from "lucide-react"
-
-import {toast} from "sonner"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
 
 
 export default function AgendaPage(){
 
-
-const supabase=createClient()
-
-
-const [eventos,setEventos]=useState<any[]>([])
-const [leads,setLeads]=useState<any[]>([])
+const supabase = createClient()
 
 
-const [titulo,setTitulo]=useState("")
-const [descricao,setDescricao]=useState("")
-const [data,setData]=useState("")
-const [horario,setHorario]=useState("")
-const [tipo,setTipo]=useState("")
-const [leadId,setLeadId]=useState("")
+const [eventos,setEventos] = useState<any[]>([])
+
+
+const [titulo,setTitulo] = useState("")
+const [tipo,setTipo] = useState("")
+const [data,setData] = useState("")
+const [horario,setHorario] = useState("")
 
 
 
 useEffect(()=>{
 
-buscarAgenda()
-buscarLeads()
+buscarEventos()
 
 },[])
 
 
 
-async function buscarLeads(){
+async function buscarEventos(){
 
 
-const {data,error}=await supabase
-.from("leads")
-.select("id,nome")
-
-
-if(!error){
-
-setLeads(data || [])
-
-}
-
-}
-
-
-
-
-async function buscarAgenda(){
-
-
-const {data,error}=await supabase
-
+const {data,error}= await supabase
 .from("agenda")
-
-.select(`
-*,
-leads(
-nome
-)
-`)
-
-.order("data_evento",
-{
-ascending:true
-})
+.select("*")
+.order("data_evento")
 
 
 if(!error){
@@ -97,18 +52,16 @@ setEventos(data || [])
 
 }
 
-
 }
 
 
 
+async function criarEvento(){
 
-async function salvarEvento(){
 
+if(!titulo || !data){
 
-if(!titulo){
-
-toast.error("Digite o título")
+alert("Preencha título e data")
 
 return
 
@@ -116,18 +69,17 @@ return
 
 
 
-const {error}=await supabase
-
+const {error}= await supabase
 .from("agenda")
-
 .insert({
 
 titulo,
-descricao,
-data_evento:data,
-horario,
+
 tipo,
-lead_id:leadId || null
+
+data_evento:data,
+
+horario
 
 })
 
@@ -135,7 +87,7 @@ lead_id:leadId || null
 
 if(error){
 
-toast.error(error.message)
+alert(error.message)
 
 return
 
@@ -143,18 +95,16 @@ return
 
 
 
-toast.success("Evento criado")
+alert("Evento criado")
 
 
 setTitulo("")
-setDescricao("")
+setTipo("")
 setData("")
 setHorario("")
-setTipo("")
-setLeadId("")
 
 
-buscarAgenda()
+buscarEventos()
 
 
 }
@@ -163,33 +113,26 @@ buscarAgenda()
 
 
 
-async function excluirEvento(id:string){
+async function excluir(id:string){
 
 
 await supabase
-
 .from("agenda")
-
 .delete()
-
 .eq("id",id)
 
 
-
-buscarAgenda()
+buscarEventos()
 
 
 }
-
 
 
 
 return (
 
-<div className="space-y-6 p-6">
+<div className="p-6 space-y-6">
 
-
-<div>
 
 <h1 className="text-3xl font-bold">
 
@@ -198,30 +141,23 @@ Calendário
 </h1>
 
 
-<p className="text-muted-foreground">
-
-Reuniões, gravações, entregas e follow-ups
-
-</p>
-
-</div>
-
-
-
 
 <Card>
+
 
 <CardHeader>
 
 <CardTitle>
-Novo compromisso
+
+Novo evento
+
 </CardTitle>
 
 </CardHeader>
 
 
 
-<CardContent className="space-y-4">
+<CardContent className="space-y-3">
 
 
 <Input
@@ -236,28 +172,9 @@ onChange={(e)=>setTitulo(e.target.value)}
 
 
 
-<Textarea
-
-placeholder="Descrição"
-
-value={descricao}
-
-onChange={(e)=>setDescricao(e.target.value)}
-
-/>
-
-
-
-<Label>
-
-Tipo
-
-</Label>
-
-
 <select
 
-className="w-full border rounded p-2"
+className="border rounded p-2 w-full"
 
 value={tipo}
 
@@ -267,76 +184,45 @@ onChange={(e)=>setTipo(e.target.value)}
 
 
 <option value="">
-Selecione
+
+Tipo
+
 </option>
 
-<option>
-Reunião
+
+<option value="post">
+
+Post
+
 </option>
 
-<option>
+
+<option value="gravacao">
+
 Gravação
+
 </option>
 
-<option>
-Entrega
+
+<option value="reuniao">
+
+Reunião
+
 </option>
 
-<option>
+
+<option value="follow">
+
 Follow-up
-</option>
-
-
-</select>
-
-
-
-
-<Label>
-
-Cliente
-
-</Label>
-
-
-<select
-
-className="w-full border rounded p-2"
-
-value={leadId}
-
-onChange={(e)=>setLeadId(e.target.value)}
-
->
-
-
-<option value="">
-
-Sem cliente
 
 </option>
 
 
-{
+<option value="entrega">
 
-leads.map((lead)=>(
-
-<option
-
-key={lead.id}
-
-value={lead.id}
-
->
-
-{lead.nome}
+Entrega
 
 </option>
-
-
-))
-
-}
 
 
 </select>
@@ -368,19 +254,15 @@ onChange={(e)=>setHorario(e.target.value)}
 
 
 
-<Button onClick={salvarEvento}>
+<Button onClick={criarEvento}>
 
-
-<Plus className="mr-2"/>
-
-Salvar
-
+Adicionar evento
 
 </Button>
 
 
-
 </CardContent>
+
 
 </Card>
 
@@ -392,7 +274,6 @@ Salvar
 
 
 {
-
 eventos.map((evento)=>(
 
 
@@ -402,13 +283,9 @@ eventos.map((evento)=>(
 <CardHeader>
 
 
-<CardTitle className="flex justify-between">
-
+<CardTitle>
 
 {evento.titulo}
-
-
-<Calendar/>
 
 </CardTitle>
 
@@ -420,32 +297,17 @@ eventos.map((evento)=>(
 
 
 <p>
-📌 {evento.tipo}
+📌 Tipo: {evento.tipo}
 </p>
 
 
 <p>
-
-👤 {evento.leads?.nome || "Sem cliente"}
-
+📅 {evento.data_evento}
 </p>
 
 
-<p className="mt-3">
-
-{evento.descricao}
-
-</p>
-
-
-<p className="text-sm mt-3">
-
-{evento.data_evento}
-
-<br/>
-
-{evento.horario}
-
+<p>
+⏰ {evento.horario}
 </p>
 
 
@@ -454,20 +316,15 @@ eventos.map((evento)=>(
 
 variant="destructive"
 
-className="mt-4"
+className="mt-3"
 
-onClick={()=>excluirEvento(evento.id)}
+onClick={()=>excluir(evento.id)}
 
 >
 
-
-<Trash2 className="mr-2"/>
-
 Excluir
 
-
 </Button>
-
 
 
 </CardContent>
@@ -478,16 +335,17 @@ Excluir
 
 ))
 
-
 }
 
 
+
 </div>
 
 
+
 </div>
+
 
 )
-
 
 }
