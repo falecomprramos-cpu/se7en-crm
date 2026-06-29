@@ -406,8 +406,7 @@ export default function ProjetosPage() {
         </DialogContent>
       </Dialog>
     </div>
+
   )
+
 }
-
-
-

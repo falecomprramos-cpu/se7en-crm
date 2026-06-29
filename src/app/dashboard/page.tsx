@@ -35,11 +35,16 @@ export default function DashboardPage() {
           .select("*", { count: "exact", head: true })
           .eq("status", "ativo")
 
-        const { data: clientes } = await supabase
-          .from("clientes")
-          .select("valor_mensal")
-          .eq("status", "ativo")
-        const receita = clientes?.reduce((acc, c) => acc + (c.valor_mensal || 0), 0) || 0
+        const { data: vendas } = await supabase
+.from("vendas")
+.select("valor")
+.eq("status","ativo")
+
+
+const receita = vendas?.reduce(
+(acc,v)=>acc+(v.valor || 0),
+0
+) || 0
 
         const { count: tarefasPendentes } = await supabase
           .from("tarefas")
@@ -69,17 +74,17 @@ export default function DashboardPage() {
         const { data: recentes } = await supabase
           .from("clientes")
           .select("*")
-          .order("criado_em", { ascending: false })
+          .order("created_at", { ascending:false })
           .limit(5)
         setClientesRecentes(recentes || [])
 
         const { data: tarefas } = await supabase
-          .from("tarefas")
-          .select("*, cliente:clientes(nome)")
-          .in("prioridade", ["alta", "urgente"])
-          .neq("status", "concluida")
-          .order("data_vencimento", { ascending: true })
-          .limit(5)
+.from("tarefas")
+.select("*")
+.in("prioridade", ["Alta","Urgente"])
+.neq("status","Concluída")
+.order("data_limite",{ascending:true})
+.limit(5)
         setTarefasUrgentes(tarefas || [])
       } catch (error) {
   console.error("Erro ao carregar dados:", error)

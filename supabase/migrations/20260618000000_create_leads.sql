@@ -1,14 +1,9 @@
-alter table leads
-add column if not exists empresa text;
-
-alter table leads
-add column if not exists whatsapp text;
-
-alter table leads
-add column if not exists instagram text;
-
-alter table leads
-add column if not exists segmento text;
-
-alter table leads
-add column if not exists origem text;
+create table if not exists leads (
+  id uuid primary key default gen_random_uuid(),
+  empresa text,
+  whatsapp text,
+  instagram text,
+  segmento text,
+  origem text,
+  created_at timestamp default now()
+);

@@ -1,66 +1,127 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
+import {useState} from "react"
+import {createClient} from "@/lib/supabase/client"
+import {useRouter} from "next/navigation"
+import {toast} from "sonner"
 
-export default function ClienteLogin() {
-  const supabase = createClient()
-  const router = useRouter()
 
-  const [email, setEmail] = useState("")
-  const [senha, setSenha] = useState("")
-  const [loading, setLoading] = useState(false)
+export default function LoginCliente(){
 
-  async function login() {
-    setLoading(true)
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password: senha,
-    })
+const supabase=createClient()
 
-    if (error) {
-      alert(error.message)
-      setLoading(false)
-      return
-    }
+const router=useRouter()
 
-    setLoading(false)
 
-    router.push("/cliente/dashboard")
-  }
+const [email,setEmail]=useState("")
+const [senha,setSenha]=useState("")
 
-  return (
-    <div className="p-6 max-w-md mx-auto space-y-4">
 
-      <h1 className="text-2xl font-bold">
-        Login do Cliente
-      </h1>
 
-      <input
-        className="w-full border p-2"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
+async function entrar(){
 
-      <input
-        className="w-full border p-2"
-        placeholder="Senha"
-        type="password"
-        value={senha}
-        onChange={(e) => setSenha(e.target.value)}
-      />
 
-      <button
-        onClick={login}
-        disabled={loading}
-        className="w-full bg-black text-white p-2"
-      >
-        {loading ? "Entrando..." : "Entrar"}
-      </button>
+const {data,error}=await supabase.auth.signInWithPassword({
 
-    </div>
-  )
+email,
+password:senha
+
+})
+
+
+if(error){
+
+toast.error(error.message)
+return
+
+}
+
+
+
+const {data:cliente}=await supabase
+.from("clientes")
+.select("*")
+.eq("user_id", data.user.id)
+.maybeSingle()
+
+
+
+if(!cliente){
+
+toast.error("Esse acesso não é de cliente")
+
+return
+
+}
+
+
+
+toast.success("Login realizado")
+
+
+router.push("/cliente/dashboard")
+
+}
+
+
+return (
+
+<div className="p-6 max-w-md mx-auto space-y-4">
+
+
+<h1 className="text-2xl font-bold">
+Login Cliente
+</h1>
+
+
+<input
+
+className="border p-3 w-full rounded"
+
+placeholder="Email"
+
+value={email}
+
+onChange={(e)=>setEmail(e.target.value)}
+
+/>
+
+
+
+<input
+
+className="border p-3 w-full rounded"
+
+placeholder="Senha"
+
+type="password"
+
+value={senha}
+
+onChange={(e)=>setSenha(e.target.value)}
+
+/>
+
+
+
+<button
+
+onClick={entrar}
+
+className="bg-black text-white w-full p-3 rounded"
+
+>
+
+Entrar
+
+</button>
+
+
+
+</div>
+
+)
+
+
 }

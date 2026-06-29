@@ -3,147 +3,413 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
+import { toast } from "sonner"
 
-export default function ClienteDashboard() {
-  const supabase = createClient()
-  const router = useRouter()
+export default function ClienteDashboard(){
 
-  const [posts, setPosts] = useState<any[]>([])
-  const [cliente, setCliente] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
+const supabase=createClient()
+const router=useRouter()
 
-  useEffect(() => {
-    carregarDados()
-  }, [])
 
-  async function carregarDados() {
-    setLoading(true)
+const [cliente,setCliente]=useState<any>(null)
+const [posts,setPosts]=useState<any[]>([])
+const [loading,setLoading]=useState(true)
 
-    // 🔐 usuário logado
-    const { data: userData } = await supabase.auth.getUser()
-    const user = userData?.user
 
-    if (!user) {
-      router.push("/cliente/login")
-      return
-    }
 
-    // 👤 cliente vinculado ao auth
-    const { data: clienteData } = await supabase
-      .from("clientes")
-      .select("*")
-      .eq("user_id", user.id)
-      .maybeSingle()
+useEffect(()=>{
+carregarDados()
+},[])
 
-    if (!clienteData) {
-      setLoading(false)
-      return
-    }
 
-    setCliente(clienteData)
 
-    // 📦 posts do cliente
-    const { data: postsData } = await supabase
-      .from("posts")
-      .select("*")
-      .eq("cliente_id", clienteData.id)
-      .order("created_at", { ascending: false })
+async function carregarDados(){
 
-    setPosts(postsData || [])
+setLoading(true)
 
-    setLoading(false)
-  }
 
-  async function atualizarStatus(id: string, status: string) {
-    await supabase
-      .from("posts")
-      .update({ status })
-      .eq("id", id)
+const {data:userData}=await supabase.auth.getUser()
 
-    carregarDados()
-  }
+const user=userData.user
 
-  if (loading) {
-    return (
-      <div className="p-6">
-        <p>Carregando área do cliente...</p>
-      </div>
-    )
-  }
 
-  return (
-    <div className="p-6 space-y-6">
+if(!user){
 
-      {/* HEADER */}
-      <div>
-        <h1 className="text-2xl font-bold">
-          Área do Cliente
-        </h1>
+router.push("/cliente/login")
+return
 
-        {cliente && (
-          <p className="text-muted-foreground">
-            Bem-vindo, {cliente.nome}
-          </p>
-        )}
-      </div>
+}
 
-      {/* LISTA DE POSTS */}
-      <div className="space-y-4">
 
-        {posts.length === 0 && (
-          <p className="text-muted-foreground">
-            Nenhum conteúdo disponível no momento.
-          </p>
-        )}
 
-        {posts.map((post) => (
-          <div
-            key={post.id}
-            className="border rounded-lg p-4 space-y-2"
-          >
+const {data:clienteData,error}=await supabase
+.from("clientes")
+.select("*")
+.eq("user_id",user.id)
+.single()
 
-            <h2 className="font-bold text-lg">
-              {post.titulo}
-            </h2>
 
-            <p className="text-sm text-muted-foreground">
-              {post.conteudo}
-            </p>
 
-            {/* STATUS */}
-            <p className={
-              post.status === "aprovado"
-                ? "text-green-600"
-                : post.status === "rejeitado"
-                ? "text-red-600"
-                : "text-yellow-600"
-            }>
-              Status: {post.status || "pendente"}
-            </p>
+if(error || !clienteData){
 
-            {/* AÇÕES */}
-            <div className="flex gap-2 pt-2">
+toast.error("Cliente não encontrado")
+return
 
-              <button
-                onClick={() => atualizarStatus(post.id, "aprovado")}
-                className="bg-green-600 text-white px-3 py-1 rounded"
-              >
-                Aprovar
-              </button>
+}
 
-              <button
-                onClick={() => atualizarStatus(post.id, "rejeitado")}
-                className="bg-red-600 text-white px-3 py-1 rounded"
-              >
-                Rejeitar
-              </button>
 
-            </div>
 
-          </div>
-        ))}
+setCliente(clienteData)
 
-      </div>
-    </div>
-  )
+
+
+const {data:postsData}=await supabase
+.from("posts")
+.select("*")
+.eq("cliente_id",clienteData.id)
+.order("created_at",{ascending:false})
+
+
+setPosts(postsData || [])
+
+
+
+setLoading(false)
+
+
+}
+
+
+
+async function atualizarStatus(
+id:string,
+status:string
+){
+
+
+await supabase
+.from("posts")
+.update({
+status
+})
+.eq("id",id)
+
+
+
+toast.success(
+status==="aprovado"
+?"Conteúdo aprovado"
+:"Solicitação enviada"
+)
+
+
+
+carregarDados()
+
+
+}
+
+
+
+if(loading){
+
+return(
+<div className="p-8">
+Carregando painel...
+</div>
+)
+
+}
+
+
+
+const aprovados =
+posts.filter(p=>p.status==="aprovado").length
+
+
+const pendentes =
+posts.filter(p=>!p.status || p.status==="pendente").length
+
+
+const rejeitados =
+posts.filter(p=>p.status==="rejeitado").length
+
+
+
+return(
+
+
+<div className="p-6 space-y-8">
+
+
+{/* CABEÇALHO */}
+
+<div className="bg-black text-white rounded-xl p-6">
+
+<h1 className="text-3xl font-bold">
+Olá, {cliente.nome}
+</h1>
+
+
+<p className="text-gray-300 mt-2">
+Painel de acompanhamento de conteúdos
+</p>
+
+
+<div className="grid md:grid-cols-3 gap-4 mt-5">
+
+
+<div className="bg-white/10 p-4 rounded">
+Empresa
+<br/>
+<b>{cliente.empresa || "-"}</b>
+</div>
+
+
+<div className="bg-white/10 p-4 rounded">
+Instagram
+<br/>
+<b>{cliente.instagram || "-"}</b>
+</div>
+
+
+<div className="bg-white/10 p-4 rounded">
+Plano mensal
+<br/>
+<b>
+R$ {cliente.valor_mensal || 0}
+</b>
+</div>
+
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+{/* INDICADORES */}
+
+
+<div className="grid md:grid-cols-3 gap-4">
+
+
+<div className="border rounded-xl p-5">
+
+<h3>
+Pendentes
+</h3>
+
+<strong className="text-3xl">
+{pendentes}
+</strong>
+
+</div>
+
+
+
+<div className="border rounded-xl p-5">
+
+<h3>
+Aprovados
+</h3>
+
+<strong className="text-3xl text-green-600">
+{aprovados}
+</strong>
+
+</div>
+
+
+
+<div className="border rounded-xl p-5">
+
+<h3>
+Alterações
+</h3>
+
+<strong className="text-3xl text-red-600">
+{rejeitados}
+</strong>
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+{/* POSTS */}
+
+
+
+<div>
+
+<h2 className="text-2xl font-bold mb-4">
+Conteúdos
+</h2>
+
+
+
+<div className="grid md:grid-cols-2 gap-5">
+
+
+{
+posts.length===0 && (
+
+<p>
+Nenhum conteúdo enviado ainda.
+</p>
+
+)
+
+}
+
+
+
+
+{
+posts.map(post=>(
+
+
+<div
+key={post.id}
+className="border rounded-xl p-5 shadow-sm space-y-3"
+>
+
+
+
+<div className="flex justify-between">
+
+
+<h3 className="font-bold text-lg">
+{post.titulo}
+</h3>
+
+
+
+<span
+className={
+post.status==="aprovado"
+?
+"text-green-600"
+:
+post.status==="rejeitado"
+?
+"text-red-600"
+:
+"text-yellow-600"
+}
+>
+
+{post.status || "pendente"}
+
+</span>
+
+
+</div>
+
+
+
+
+<p className="text-gray-600">
+{post.conteudo}
+</p>
+
+
+
+<div className="text-sm">
+
+📌 {post.tipo}
+
+<br/>
+
+📅 {post.data_post}
+
+</div>
+
+
+
+
+<div className="flex gap-3 pt-3">
+
+
+<button
+
+onClick={()=>atualizarStatus(
+post.id,
+"aprovado"
+)}
+
+className="
+bg-green-600
+text-white
+px-4
+py-2
+rounded
+"
+
+>
+
+Aprovar
+
+</button>
+
+
+
+<button
+
+onClick={()=>atualizarStatus(
+post.id,
+"rejeitado"
+)}
+
+className="
+bg-red-600
+text-white
+px-4
+py-2
+rounded
+"
+
+>
+
+Pedir alteração
+
+</button>
+
+
+</div>
+
+
+
+</div>
+
+
+))
+
+}
+
+
+
+</div>
+
+
+</div>
+
+
+
+</div>
+
+
+)
+
+
 }

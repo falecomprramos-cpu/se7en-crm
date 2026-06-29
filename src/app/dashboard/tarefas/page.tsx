@@ -3,70 +3,70 @@
 import { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 
+import {
+Card,
+CardContent,
+CardHeader,
+CardTitle
+} from "@/components/ui/card"
+
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
+Dialog,
+DialogContent,
+DialogHeader,
+DialogTitle,
+DialogFooter
 } from "@/components/ui/dialog"
 
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+Select,
+SelectContent,
+SelectItem,
+SelectTrigger,
+SelectValue
 } from "@/components/ui/select"
 
 import {
-  Plus,
-  CheckCircle,
-  Clock,
-  AlertTriangle,
-  Pencil
+Plus,
+CheckCircle,
+Clock,
+AlertTriangle,
+Pencil,
+Play
 } from "lucide-react"
 
 import { toast } from "sonner"
 
 
-
 export default function TarefasPage(){
 
-
-const supabase = createClient()
-
-
-const [tarefas,setTarefas] = useState<any[]>([])
-
-const [open,setOpen] = useState(false)
-
-const [editando,setEditando] = useState<any>(null)
-
-const [filtro,setFiltro] = useState("todos")
-
-const [busca,setBusca] = useState("")
-const [prioridadeFiltro,setPrioridadeFiltro] = useState("todas")
+const supabase=createClient()
 
 
+const [tarefas,setTarefas]=useState<any[]>([])
 
-const [form,setForm] = useState({
+const [open,setOpen]=useState(false)
+
+const [editando,setEditando]=useState<any>(null)
+
+const [busca,setBusca]=useState("")
+
+const [statusFiltro,setStatusFiltro]=useState("todos")
+
+const [form,setForm]=useState({
 
 titulo:"",
 descricao:"",
 status:"pendente",
 prioridade:"media",
-data_vencimento:""
+data_limite:""
 
 })
-
-
 
 
 
@@ -78,16 +78,16 @@ buscarTarefas()
 
 
 
-
-
 async function buscarTarefas(){
 
 
 const {data,error}=await supabase
-.from("tarefas")
-.select("*")
-.order("criado_em",{ascending:false})
 
+.from("tarefas")
+
+.select("*")
+
+.order("created_at",{ascending:false})
 
 
 if(!error){
@@ -96,54 +96,35 @@ setTarefas(data || [])
 
 }
 
-
 }
 
 
 
 
 
-
-
-async function salvarTarefa(){
-
+async function salvar(){
 
 
 if(!form.titulo){
 
-toast.error("Digite o título da tarefa")
+toast.error("Digite o título")
 
 return
 
 }
 
 
-
-
-// EDITAR
 
 if(editando){
 
 
 const {error}=await supabase
+
 .from("tarefas")
-.update({
 
-titulo:form.titulo,
+.update(form)
 
-descricao:form.descricao,
-
-status:form.status,
-
-prioridade:form.prioridade,
-
-data_vencimento:form.data_vencimento || null
-
-
-})
 .eq("id",editando.id)
-
-
 
 
 if(error){
@@ -153,47 +134,19 @@ toast.error(error.message)
 return
 
 }
-
 
 
 toast.success("Tarefa atualizada")
 
 
-setEditando(null)
-
-setOpen(false)
-
-buscarTarefas()
-
-
-return
-
-
-}
-
-
-
-
-// CRIAR
+}else{
 
 
 const {error}=await supabase
+
 .from("tarefas")
-.insert({
 
-titulo:form.titulo,
-
-descricao:form.descricao,
-
-status:form.status,
-
-prioridade:form.prioridade,
-
-data_vencimento:form.data_vencimento || null
-
-
-})
-
+.insert(form)
 
 
 if(error){
@@ -205,11 +158,15 @@ return
 }
 
 
-
 toast.success("Tarefa criada")
 
 
+}
+
+
 setOpen(false)
+
+setEditando(null)
 
 
 setForm({
@@ -218,108 +175,63 @@ titulo:"",
 descricao:"",
 status:"pendente",
 prioridade:"media",
-data_vencimento:""
+data_limite:""
 
 })
 
 
 buscarTarefas()
 
-
-}
-
-async function concluirTarefa(id:string){
-
-
-const {error}=await supabase
-.from("tarefas")
-.update({
-
-status:"concluida"
-
-})
-.eq("id",id)
-
-
-
-if(error){
-
-toast.error(error.message)
-
-return
-
-}
-
-
-
-toast.success("Tarefa concluída")
-
-buscarTarefas()
-
-
 }
 
 
 
 
 
+function editar(t:any){
 
-
-async function excluirTarefa(id:string){
-
-
-const {error}=await supabase
-.from("tarefas")
-.delete()
-.eq("id",id)
-
-
-
-if(error){
-
-toast.error(error.message)
-
-return
-
-}
-
-
-
-toast.success("Tarefa excluída")
-
-buscarTarefas()
-
-
-}
-
-
-
-
-
-
-function abrirEditar(tarefa:any){
-
-
-setEditando(tarefa)
-
+setEditando(t)
 
 setForm({
 
-titulo:tarefa.titulo,
+titulo:t.titulo,
 
-descricao:tarefa.descricao || "",
+descricao:t.descricao || "",
 
-status:tarefa.status,
+status:t.status,
 
-prioridade:tarefa.prioridade,
+prioridade:t.prioridade,
 
-data_vencimento:tarefa.data_vencimento || ""
+data_limite:t.data_limite || ""
 
 })
 
 
 setOpen(true)
 
+}
+
+
+
+
+
+async function mudarStatus(
+id:string,
+status:string
+){
+
+await supabase
+
+.from("tarefas")
+
+.update({status})
+
+.eq("id",id)
+
+
+buscarTarefas()
+
+toast.success("Status atualizado")
 
 }
 
@@ -327,20 +239,63 @@ setOpen(true)
 
 
 
+async function excluir(id:string){
+
+await supabase
+
+.from("tarefas")
+
+.delete()
+
+.eq("id",id)
+
+
+buscarTarefas()
+
+toast.success("Excluída")
+
+}
+
+
+
+
+const lista=tarefas
+
+.filter(t=>
+
+statusFiltro==="todos"
+
+?
+
+true
+
+:
+
+t.status===statusFiltro
+
+)
+
+.filter(t=>
+
+t.titulo
+
+.toLowerCase()
+
+.includes(busca.toLowerCase())
+
+)
+
 
 
 return(
 
-
 <div className="space-y-6 p-6">
 
 
-
-<div className="flex justify-between items-center">
+<div className="flex justify-between">
 
 
 <div>
-
 
 <h1 className="text-3xl font-bold">
 
@@ -348,41 +303,20 @@ Tarefas
 
 </h1>
 
-
 <p className="text-muted-foreground">
 
-Gerencie suas atividades
+Organize sua operação
 
 </p>
-
 
 </div>
 
 
-
-<Button onClick={()=>{
-
-setEditando(null)
-
-setForm({
-
-titulo:"",
-descricao:"",
-status:"pendente",
-prioridade:"media",
-data_vencimento:""
-
-})
-
-setOpen(true)
-
-}}>
-
+<Button onClick={()=>setOpen(true)}>
 
 <Plus className="mr-2 h-4 w-4"/>
 
 Nova tarefa
-
 
 </Button>
 
@@ -393,46 +327,30 @@ Nova tarefa
 
 
 
-
-
 <div className="grid md:grid-cols-3 gap-4">
-
 
 
 <Card>
 
 <CardHeader>
 
-<CardTitle>
-
-Pendentes
-
-</CardTitle>
+<CardTitle>Pendentes</CardTitle>
 
 </CardHeader>
-
 
 <CardContent>
 
 <Clock/>
 
+<h2 className="text-3xl font-bold">
 
-<p className="text-2xl font-bold">
+{tarefas.filter(t=>t.status==="pendente").length}
 
-{
-tarefas.filter(t=>t.status==="pendente").length
-}
-
-</p>
-
+</h2>
 
 </CardContent>
 
-
 </Card>
-
-
-
 
 
 
@@ -440,35 +358,23 @@ tarefas.filter(t=>t.status==="pendente").length
 
 <CardHeader>
 
-<CardTitle>
-
-Concluídas
-
-</CardTitle>
+<CardTitle>Em andamento</CardTitle>
 
 </CardHeader>
-
 
 <CardContent>
 
-<CheckCircle/>
+<Play/>
 
+<h2 className="text-3xl font-bold">
 
-<p className="text-2xl font-bold">
+{tarefas.filter(t=>t.status==="em_andamento").length}
 
-{
-tarefas.filter(t=>t.status==="concluida").length
-}
-
-</p>
-
+</h2>
 
 </CardContent>
 
-
 </Card>
-
-
 
 
 
@@ -477,38 +383,26 @@ tarefas.filter(t=>t.status==="concluida").length
 
 <CardHeader>
 
-<CardTitle>
-
-Prioridade Alta
-
-</CardTitle>
+<CardTitle>Alta prioridade</CardTitle>
 
 </CardHeader>
-
 
 <CardContent>
 
 <AlertTriangle/>
 
+<h2 className="text-3xl font-bold">
 
-<p className="text-2xl font-bold">
+{tarefas.filter(t=>t.prioridade==="alta").length}
 
-{
-tarefas.filter(t=>t.prioridade==="alta").length
-}
-
-</p>
-
+</h2>
 
 </CardContent>
-
 
 </Card>
 
 
-
 </div>
-
 
 
 
@@ -519,13 +413,11 @@ tarefas.filter(t=>t.prioridade==="alta").length
 
 <Input
 
-placeholder="Buscar tarefa..."
+placeholder="Buscar..."
 
 value={busca}
 
-onChange={(e)=>
-setBusca(e.target.value)
-}
+onChange={e=>setBusca(e.target.value)}
 
 />
 
@@ -533,472 +425,32 @@ setBusca(e.target.value)
 
 <Select
 
-value={prioridadeFiltro}
+value={statusFiltro}
 
-onValueChange={setPrioridadeFiltro}
+onValueChange={setStatusFiltro}
 
 >
 
-
-<SelectTrigger className="w-[180px]">
-
-<SelectValue placeholder="Prioridade"/>
-
-</SelectTrigger>
-
-
-
-<SelectContent>
-
-
-<SelectItem value="todas">
-
-Todas prioridades
-
-</SelectItem>
-
-
-<SelectItem value="alta">
-
-Alta
-
-</SelectItem>
-
-
-<SelectItem value="media">
-
-Média
-
-</SelectItem>
-
-
-<SelectItem value="baixa">
-
-Baixa
-
-</SelectItem>
-
-
-</SelectContent>
-
-
-</Select>
-
-</div>
-
-
-<div className="flex gap-3">
-
-<Button onClick={()=>setFiltro("todos")}>
-
-Todas
-
-</Button>
-
-
-<Button onClick={()=>setFiltro("pendente")}>
-
-Pendentes
-
-</Button>
-
-
-<Button onClick={()=>setFiltro("concluida")}>
-
-Concluídas
-
-</Button>
-
-
-</div>
-
-<div className="space-y-4">
-
-
-{
-
-tarefas
-
-.filter(t=> 
-filtro==="todos" 
-? true 
-: t.status===filtro
-)
-
-.filter(t=>
-prioridadeFiltro==="todas"
-?
-true
-:
-t.prioridade===prioridadeFiltro
-)
-
-.filter(t=>
-t.titulo
-.toLowerCase()
-.includes(busca.toLowerCase())
-)
-
-.map(tarefa=>(
-
-
-
-<Card key={tarefa.id}>
-
-
-<CardHeader>
-
-
-<CardTitle className="flex justify-between">
-
-
-{tarefa.titulo}
-
-
-
-<span
-className={`
-px-3 py-1 rounded-full text-xs font-medium
-
-${
-tarefa.status === "concluida"
-
-? "bg-green-500/20 text-green-400"
-
-:
-
-tarefa.status === "em_andamento"
-
-? "bg-blue-500/20 text-blue-400"
-
-:
-
-"bg-yellow-500/20 text-yellow-400"
-
-}
-
-`}
->
-
-{tarefa.status === "concluida"
-
-? "Concluída"
-
-:
-
-tarefa.status === "em_andamento"
-
-? "Em andamento"
-
-:
-
-"Pendente"
-
-}
-
-</span>
-
-
-</CardTitle>
-
-
-</CardHeader>
-
-
-
-
-
-<CardContent>
-
-
-
-<p>
-
-{tarefa.descricao}
-
-</p>
-
-
-
-
-<p className="text-sm mt-3 text-muted-foreground">
-
-
-Prioridade: {tarefa.prioridade}
-
-
-<br/>
-
-
-Prazo: {tarefa.data_vencimento || "Sem prazo"}
-
-
-
-</p>
-
-
-
-
-
-<div className="flex gap-2 mt-4">
-
-
-
-
-
-{
-
-tarefa.status !== "concluida" &&
-
-
-<Button
-
-onClick={()=>concluirTarefa(tarefa.id)}
-
->
-
-
-<CheckCircle className="mr-2 h-4 w-4"/>
-
-
-Concluir
-
-
-</Button>
-
-
-}
-
-
-
-
-<Button
-
-variant="outline"
-
-onClick={()=>abrirEditar(tarefa)}
-
->
-
-
-<Pencil className="mr-2 h-4 w-4"/>
-
-
-Editar
-
-
-</Button>
-
-
-
-
-
-<Button
-
-variant="destructive"
-
-onClick={()=>excluirTarefa(tarefa.id)}
-
->
-
-
-Excluir
-
-
-</Button>
-
-
-
-</div>
-
-
-
-
-</CardContent>
-
-
-
-</Card>
-
-
-))
-
-
-}
-
-
-
-</div>
-
-
-
-
-
-
-
-
-<Dialog 
-open={open} 
-onOpenChange={(valor)=>{
-
-setOpen(valor)
-
-if(!valor){
-
-setEditando(null)
-
-setForm({
-titulo:"",
-descricao:"",
-status:"pendente",
-prioridade:"media",
-data_vencimento:""
-})
-
-}
-
-}}
->
-
-
-<DialogContent>
-
-
-
-<DialogHeader>
-
-
-<DialogTitle>
-
-{editando ? "Editar tarefa" : "Nova tarefa"}
-
-</DialogTitle>
-
-
-</DialogHeader>
-
-
-
-
-
-<Label>
-
-Título
-
-</Label>
-
-
-<Input
-
-
-value={form.titulo}
-
-
-onChange={(e)=>
-
-setForm({
-
-...form,
-
-titulo:e.target.value
-
-})
-
-
-}
-
-
-/>
-
-
-
-
-
-
-<Label>
-
-Descrição
-
-</Label>
-
-
-
-<Textarea
-
-
-value={form.descricao}
-
-
-onChange={(e)=>
-
-setForm({
-
-...form,
-
-descricao:e.target.value
-
-})
-
-
-}
-
-
-/>
-
-
-
-
-
-
-
-<Label>
-
-Status
-
-</Label>
-
-
-<Select
-
-
-value={form.status}
-
-
-onValueChange={(v)=>
-
-setForm({
-
-...form,
-
-status:v
-
-})
-
-
-}
-
-
->
-
-
-<SelectTrigger>
+<SelectTrigger className="w-[200px]">
 
 <SelectValue/>
 
 </SelectTrigger>
 
 
-
 <SelectContent>
 
+<SelectItem value="todos">
 
-<SelectItem value="pendente">
-
-Pendente
+Todas
 
 </SelectItem>
 
+<SelectItem value="pendente">
 
+Pendentes
+
+</SelectItem>
 
 <SelectItem value="em_andamento">
 
@@ -1007,53 +459,217 @@ Em andamento
 </SelectItem>
 
 
-
 <SelectItem value="concluida">
 
-Concluída
+Concluídas
 
 </SelectItem>
-
 
 
 </SelectContent>
 
 
-
 </Select>
 
 
+</div>
 
 
 
 
-<Label>
 
-Prioridade
+<div className="space-y-4">
 
-</Label>
 
+{lista.map(t=>(
+
+
+<Card key={t.id}>
+
+
+<CardHeader>
+
+<CardTitle className="flex justify-between">
+
+
+{t.titulo}
+
+
+
+<span className="text-xs">
+
+{t.status}
+
+</span>
+
+
+</CardTitle>
+
+</CardHeader>
+
+
+
+<CardContent>
+
+
+<p>
+
+{t.descricao}
+
+</p>
+
+
+<p className="text-sm text-muted-foreground mt-3">
+
+Prioridade: {t.prioridade}
+
+<br/>
+
+Prazo: {t.data_limite || "Sem prazo"}
+
+</p>
+
+
+
+
+<div className="flex gap-2 mt-4">
+
+
+{t.status==="pendente" &&
+
+<Button
+
+onClick={()=>mudarStatus(t.id,"em_andamento")}
+
+>
+
+<Play className="mr-2 h-4 w-4"/>
+
+Iniciar
+
+</Button>
+
+}
+
+
+
+{t.status!=="concluida" &&
+
+<Button
+
+onClick={()=>mudarStatus(t.id,"concluida")}
+
+>
+
+<CheckCircle className="mr-2 h-4 w-4"/>
+
+Concluir
+
+</Button>
+
+}
+
+
+
+<Button
+
+variant="outline"
+
+onClick={()=>editar(t)}
+
+>
+
+<Pencil/>
+
+</Button>
+
+
+
+<Button
+
+variant="destructive"
+
+onClick={()=>excluir(t.id)}
+
+>
+
+Excluir
+
+</Button>
+
+
+
+</div>
+
+
+</CardContent>
+
+
+</Card>
+
+
+))}
+
+
+</div>
+
+
+
+
+
+
+<Dialog open={open} onOpenChange={setOpen}>
+
+
+<DialogContent>
+
+
+<DialogHeader>
+
+<DialogTitle>
+
+{editando?"Editar":"Nova"} tarefa
+
+</DialogTitle>
+
+</DialogHeader>
+
+
+
+
+<Label>Título</Label>
+
+<Input
+
+value={form.titulo}
+
+onChange={e=>setForm({...form,titulo:e.target.value})}
+
+/>
+
+
+
+<Label>Descrição</Label>
+
+<Textarea
+
+value={form.descricao}
+
+onChange={e=>setForm({...form,descricao:e.target.value})}
+
+/>
+
+
+
+
+<Label>Prioridade</Label>
 
 
 <Select
 
-
 value={form.prioridade}
 
-
-onValueChange={(v)=>
-
-setForm({
-
-...form,
-
-prioridade:v
-
-})
-
-
-}
-
+onValueChange={v=>setForm({...form,prioridade:v})}
 
 >
 
@@ -1065,10 +681,7 @@ prioridade:v
 </SelectTrigger>
 
 
-
 <SelectContent>
-
-
 
 <SelectItem value="baixa">
 
@@ -1076,15 +689,11 @@ Baixa
 
 </SelectItem>
 
-
-
 <SelectItem value="media">
 
 Média
 
 </SelectItem>
-
-
 
 <SelectItem value="alta">
 
@@ -1093,16 +702,7 @@ Alta
 </SelectItem>
 
 
-
-<SelectItem value="urgente">
-
-Urgente
-
-</SelectItem>
-
-
 </SelectContent>
-
 
 
 </Select>
@@ -1110,78 +710,39 @@ Urgente
 
 
 
-
-
-
-<Label>
-
-Prazo
-
-</Label>
-
-
+<Label>Prazo</Label>
 
 <Input
 
-
 type="date"
 
+value={form.data_limite}
 
-value={form.data_vencimento}
-
-
-
-onChange={(e)=>
-
-setForm({
-
-...form,
-
-data_vencimento:e.target.value
-
-})
-
-
-}
-
+onChange={e=>setForm({...form,data_limite:e.target.value})}
 
 />
 
 
 
 
-
-
 <DialogFooter>
 
+<Button onClick={salvar}>
 
-<Button onClick={salvarTarefa}>
-
-
-{editando ? "Salvar alteração" : "Criar tarefa"}
-
-
+Salvar
 
 </Button>
 
-
 </DialogFooter>
-
 
 
 </DialogContent>
 
 
-
 </Dialog>
 
 
-
-
-
-
 </div>
-
 
 )
 

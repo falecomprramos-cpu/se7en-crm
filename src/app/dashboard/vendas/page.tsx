@@ -206,7 +206,7 @@ data_fim: form.data_fim || null,
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Ticket M dio</p>
+                <p className="text-sm text-muted-foreground">Ticket Médio</p>
                 <p className="text-2xl font-bold text-blue-500 mt-1">
                   {formatCurrency(ticketMedio)}
                 </p>
@@ -434,6 +434,3 @@ data_fim: form.data_fim || null,
     </div>
   )
 }
-
-
-

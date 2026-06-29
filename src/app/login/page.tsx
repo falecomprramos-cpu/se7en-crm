@@ -35,10 +35,38 @@ export default function LoginPage() {
       }
 
       if (data.user) {
-        toast.success("Login realizado com sucesso!")
-        router.push("/dashboard")
-        router.refresh()
-      }
+
+
+const {data: cliente} = await supabase
+.from("clientes")
+.select("id")
+.eq("user_id", data.user.id)
+.maybeSingle()
+
+
+
+if(cliente){
+
+toast.success("Bem-vindo cliente!")
+
+router.push("/cliente/dashboard")
+
+}else{
+
+
+toast.success("Login realizado com sucesso!")
+
+router.push("/dashboard")
+
+
+}
+
+
+
+router.refresh()
+
+}
+
     } catch (error) {
       toast.error("Erro inesperado ao fazer login")
     } finally {
@@ -170,7 +198,7 @@ export default function LoginPage() {
 
         {/* Footer */}
         <p className="text-center text-xs text-muted-foreground mt-6">
-          © 2024 SE7EN Marketing. Todos os direitos reservados.
+          © 2026 SE7EN Marketing. Todos os direitos reservados.
         </p>
       </div>
     </div>

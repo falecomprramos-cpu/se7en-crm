@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 
 import { Badge } from "@/components/ui/badge"
@@ -36,7 +36,7 @@ export default function ConfiguracoesPage() {
       if (!user) return
 
       const { data, error } = await supabase
-        .from("usuarios")
+        .from("profiles")
         .select("*")
         .eq("id", user.id)
         .single()
@@ -44,7 +44,7 @@ export default function ConfiguracoesPage() {
       if (data) {
         setPerfil(data)
       } else if (user) {
-        // Se não tem perfil, usa dados do auth
+        // Se n�o tem perfil, usa dados do auth
         setPerfil({
           nome: user.user_metadata?.nome || user.email?.split("@")[0],
           email: user.email,
@@ -68,7 +68,7 @@ export default function ConfiguracoesPage() {
       if (!user) return
 
       const { error } = await supabase
-        .from("usuarios")
+        .from("profiles")
         .upsert({
           id: user.id,
           email: user.email,
@@ -80,7 +80,7 @@ export default function ConfiguracoesPage() {
         })
 
       if (error) throw error
-      toast.success("Ã¢Å“â€¦ Configurações salvas!")
+      toast.success("âœ… Configura��es salvas!")
     } catch (error: any) {
       toast.error("Erro: " + error.message)
     } finally {
@@ -95,9 +95,9 @@ export default function ConfiguracoesPage() {
   return (
     <div className="space-y-6 max-w-3xl">
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Configurações salvas!</h1>
+        <h1 className="text-3xl font-bold text-foreground">Configura��es salvas!</h1>
         <p className="text-muted-foreground mt-1">
-          Gerencie seu perfil e preferências
+          Gerencie seu perfil e prefer�ncias
         </p>
       </div>
 
@@ -109,7 +109,7 @@ export default function ConfiguracoesPage() {
             Perfil
           </CardTitle>
           <CardDescription>
-            Suas Informações pessoais e profissionais
+            Suas Informa��es pessoais e profissionais
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -152,7 +152,7 @@ export default function ConfiguracoesPage() {
                 <Input
                   value={perfil.cargo || ""}
                   onChange={(e) => setPerfil({ ...perfil, cargo: e.target.value })}
-                  placeholder="Ex: Gestor de Tráfego"
+                  placeholder="Ex: Gestor de Tr�fego"
                 />
               </div>
               <div className="space-y-2">
@@ -182,7 +182,7 @@ export default function ConfiguracoesPage() {
                 className="bg-gold-gradient text-black font-semibold gold-glow"
               >
                 <Save className="h-4 w-4 mr-2" />
-                {salvando ? "Salvando..." : "Salvar Alterações"}
+                {salvando ? "Salvando..." : "Salvar Altera��es"}
               </Button>
             </div>
           </form>
@@ -199,7 +199,7 @@ export default function ConfiguracoesPage() {
         </CardHeader>
         <CardContent className="space-y-2 text-sm">
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Versão:</span>
+            <span className="text-muted-foreground">Vers�o:</span>
             <span className="text-foreground">SE7EN CRM 1.0</span>
           </div>
           <div className="flex justify-between">
@@ -208,7 +208,7 @@ export default function ConfiguracoesPage() {
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Status:</span>
-            <Badge className="bg-green-500/10 text-green-500">🟢 Online</Badge>
+            <Badge className="bg-green-500/10 text-green-500">?? Online</Badge>
           </div>
         </CardContent>
       </Card>

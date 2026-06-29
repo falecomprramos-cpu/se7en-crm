@@ -1,175 +1,536 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { createClient } from "@/lib/supabase/client"
+import {useEffect,useState} from "react"
+import {createClient} from "@/lib/supabase/client"
 
-export default function PostsPage() {
-  const supabase = createClient()
+import {
+Card,
+CardContent,
+CardHeader,
+CardTitle
+} from "@/components/ui/card"
 
-  const [clientes, setClientes] = useState<any[]>([])
-  const [posts, setPosts] = useState<any[]>([])
+import {Button} from "@/components/ui/button"
+import {Badge} from "@/components/ui/badge"
+import {Input} from "@/components/ui/input"
 
-  const [clienteId, setClienteId] = useState("")
-  const [titulo, setTitulo] = useState("")
-  const [conteudo, setConteudo] = useState("")
-  const [tipo, setTipo] = useState("")
-  const [dataPost, setDataPost] = useState("")
+import {
+Plus,
+Search,
+CalendarDays,
+Check,
+X
+} from "lucide-react"
 
-  useEffect(() => {
-    buscarClientes()
-    buscarPosts()
-  }, [])
+import {toast} from "sonner"
 
-  async function buscarClientes() {
-    const { data } = await supabase.from("clientes").select("*")
-    setClientes(data || [])
-  }
 
-  async function buscarPosts() {
-    const { data } = await supabase
-      .from("posts")
-      .select("*, clientes(nome, empresa)")
-      .order("created_at", { ascending: false })
 
-    setPosts(data || [])
-  }
+export default function PostsPage(){
 
-  async function criarPost() {
-  if (!titulo || !clienteId) {
-    alert("Preencha cliente e título")
-    return
-  }
 
-  // 1. cria post
-  const { data: post, error } = await supabase
-    .from("posts")
-    .insert([
-      {
-        cliente_id: clienteId,
-        titulo,
-        conteudo,
-        tipo,
-        data_post: dataPost,
-        status: "pendente",
-      },
-    ])
-    .select()
-    .single()
+const supabase=createClient()
 
-  if (error) {
-    alert(error.message)
-    return
-  }
 
-  // 2. cria evento na agenda automaticamente
-  await supabase.from("agenda").insert([
-    {
-      titulo: `Post: ${titulo}`,
-      descricao: conteudo,
-      data_evento: dataPost,
-      tipo: "post",
-      post_id: post.id,
-    },
-  ])
+const [clientes,setClientes]=useState<any[]>([])
+const [posts,setPosts]=useState<any[]>([])
 
-  alert("Post criado e enviado para agenda!")
+const [busca,setBusca]=useState("")
 
-  setClienteId("")
-  setTitulo("")
-  setConteudo("")
-  setTipo("")
-  setDataPost("")
 
-  buscarPosts()
+const [form,setForm]=useState({
+
+cliente_id:"",
+titulo:"",
+conteudo:"",
+tipo:"",
+data_post:""
+
+})
+
+
+
+useEffect(()=>{
+
+carregar()
+
+},[])
+
+
+
+async function carregar(){
+
+
+const {data:cli}=await supabase
+.from("clientes")
+.select("*")
+.order("nome")
+
+
+setClientes(cli || [])
+
+
+
+const {data:p}=await supabase
+.from("posts")
+.select("*,clientes(nome,empresa)")
+.order("created_at",{ascending:false})
+
+
+setPosts(p || [])
+
+
 }
 
-  return (
-    <div className="p-6 space-y-6">
 
-      <h1 className="text-2xl font-bold">
-        Posts (Criação de Conteúdo)
-      </h1>
 
-      {/* FORM */}
-      <div className="space-y-3 border p-4 rounded-lg">
+async function criarPost(){
 
-        <select
-          value={clienteId}
-          onChange={(e) => setClienteId(e.target.value)}
-          className="w-full border p-2"
-        >
-          <option value="">Selecione o cliente</option>
 
-          {clientes.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.nome} ({c.empresa})
-            </option>
-          ))}
-        </select>
+if(!form.cliente_id || !form.titulo){
 
-        <input
-          placeholder="Título"
-          className="w-full border p-2"
-          value={titulo}
-          onChange={(e) => setTitulo(e.target.value)}
-        />
+toast.error("Cliente e título são obrigatórios")
+return
 
-        <textarea
-          placeholder="Conteúdo"
-          className="w-full border p-2"
-          value={conteudo}
-          onChange={(e) => setConteudo(e.target.value)}
-        />
+}
 
-        <input
-          placeholder="Tipo (post, story, reel...)"
-          className="w-full border p-2"
-          value={tipo}
-          onChange={(e) => setTipo(e.target.value)}
-        />
 
-        <input
-          type="date"
-          className="w-full border p-2"
-          value={dataPost}
-          onChange={(e) => setDataPost(e.target.value)}
-        />
 
-        <button
-          onClick={criarPost}
-          className="bg-black text-white px-4 py-2"
-        >
-          Criar Post
-        </button>
+const {error}=await supabase
+.from("posts")
+.insert([{
 
-      </div>
+...form,
+status:"pendente"
 
-      {/* LISTA */}
-      <div className="space-y-4">
+}])
 
-        {posts.map((post) => (
-          <div key={post.id} className="border p-4 rounded-lg">
 
-            <h2 className="font-bold">{post.titulo}</h2>
+if(error){
 
-            <p className="text-sm text-gray-500">
-              {post.clientes?.nome} ({post.clientes?.empresa})
-            </p>
+toast.error(error.message)
+return
 
-            <p className="mt-2">{post.conteudo}</p>
+}
 
-            <p className="text-sm mt-2">
-              Tipo: {post.tipo} | Status:{" "}
-              <span className="text-yellow-600">
-                {post.status}
-              </span>
-            </p>
 
-          </div>
-        ))}
 
-      </div>
+// cria agenda
 
-    </div>
-  )
+
+await supabase
+.from("agenda")
+.insert([{
+
+titulo:`Post: ${form.titulo}`,
+descricao:form.conteudo,
+data_evento:form.data_post,
+tipo:"post",
+cliente_id:form.cliente_id
+
+}])
+
+
+
+toast.success("Post criado!")
+
+
+setForm({
+
+cliente_id:"",
+titulo:"",
+conteudo:"",
+tipo:"",
+data_post:""
+
+})
+
+
+carregar()
+
+
+}
+
+
+
+
+async function alterarStatus(id:string,status:string){
+
+
+await supabase
+.from("posts")
+.update({status})
+.eq("id",id)
+
+
+carregar()
+
+
+}
+
+
+
+const filtrados=posts.filter(p=>
+
+p.titulo
+.toLowerCase()
+.includes(busca.toLowerCase())
+
+)
+
+
+
+return (
+
+
+<div className="space-y-6">
+
+
+<div className="flex justify-between items-center">
+
+
+<div>
+
+<h1 className="text-3xl font-bold">
+Posts
+</h1>
+
+<p className="text-muted-foreground">
+{posts.length} conteúdos cadastrados
+</p>
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+<Card>
+
+<CardHeader>
+
+<CardTitle>
+Criar novo conteúdo
+</CardTitle>
+
+</CardHeader>
+
+
+<CardContent className="space-y-3">
+
+
+<select
+
+className="w-full border rounded p-2"
+
+value={form.cliente_id}
+
+onChange={e=>
+setForm({...form,cliente_id:e.target.value})
+}
+
+>
+
+
+<option value="">
+Selecionar cliente
+</option>
+
+
+{clientes.map(c=>(
+
+<option key={c.id} value={c.id}>
+
+{c.nome}
+
+</option>
+
+))}
+
+
+</select>
+
+
+
+
+<Input
+
+placeholder="Título"
+
+value={form.titulo}
+
+onChange={e=>
+setForm({...form,titulo:e.target.value})
+}
+
+/>
+
+
+
+<textarea
+
+className="w-full border rounded p-3"
+
+placeholder="Descrição do conteúdo"
+
+value={form.conteudo}
+
+onChange={e=>
+setForm({...form,conteudo:e.target.value})
+}
+
+/>
+
+
+
+<Input
+
+placeholder="Tipo (Reels, Post, Story)"
+
+value={form.tipo}
+
+onChange={e=>
+setForm({...form,tipo:e.target.value})
+}
+
+/>
+
+
+
+<Input
+
+type="date"
+
+value={form.data_post}
+
+onChange={e=>
+setForm({...form,data_post:e.target.value})
+}
+
+/>
+
+
+
+<Button
+
+onClick={criarPost}
+
+>
+
+<Plus className="mr-2 h-4"/>
+
+Criar Post
+
+</Button>
+
+
+
+</CardContent>
+
+</Card>
+
+
+
+
+
+
+
+<Card>
+
+
+<CardHeader>
+
+
+<div className="flex gap-3">
+
+
+<Search/>
+
+
+<Input
+
+placeholder="Buscar post..."
+
+value={busca}
+
+onChange={e=>setBusca(e.target.value)}
+
+ />
+
+
+</div>
+
+
+</CardHeader>
+
+
+
+
+<CardContent className="space-y-4">
+
+
+
+{filtrados.map(post=>(
+
+
+
+<div
+
+key={post.id}
+
+className="border rounded-xl p-4 space-y-3"
+
+>
+
+
+<div className="flex justify-between">
+
+
+<div>
+
+
+<h2 className="font-bold text-lg">
+
+{post.titulo}
+
+</h2>
+
+
+<p className="text-sm text-muted-foreground">
+
+{post.clientes?.nome}
+
+</p>
+
+
+</div>
+
+
+
+<Badge>
+
+{post.status}
+
+</Badge>
+
+
+</div>
+
+
+
+
+<p>
+
+{post.conteudo}
+
+</p>
+
+
+
+<div className="flex gap-2 text-sm">
+
+
+<span>
+
+📌 {post.tipo}
+
+</span>
+
+
+<span>
+
+<CalendarDays className="inline h-4"/>
+
+{post.data_post}
+
+</span>
+
+
+</div>
+
+
+
+
+
+<div className="flex gap-2">
+
+
+<Button
+
+size="sm"
+
+onClick={()=>alterarStatus(post.id,"aprovado")}
+
+className="bg-green-600"
+
+>
+
+<Check/>
+
+Aprovar
+
+</Button>
+
+
+
+
+<Button
+
+size="sm"
+
+variant="destructive"
+
+onClick={()=>alterarStatus(post.id,"rejeitado")}
+
+>
+
+<X/>
+
+Rejeitar
+
+</Button>
+
+
+
+<Button
+
+size="sm"
+
+onClick={()=>alterarStatus(post.id,"publicado")}
+
+>
+
+Publicado
+
+</Button>
+
+
+</div>
+
+
+
+
+</div>
+
+
+))}
+
+
+</CardContent>
+
+
+</Card>
+
+
+
+</div>
+
+
+)
+
+
 }
